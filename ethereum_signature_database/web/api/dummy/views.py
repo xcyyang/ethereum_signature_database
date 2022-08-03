@@ -36,7 +36,7 @@ async def create_dummy_model(
     dummy_dao: DummyDAO = Depends(),
 ) -> None:
     """
-    Creates dummy model in the database.
+    Creates dummy model in the database [Test for project].
 
     :param new_dummy_object: new dummy model item.
     :param dummy_dao: DAO for dummy models.

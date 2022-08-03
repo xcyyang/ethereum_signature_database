@@ -1,5 +1,8 @@
 FROM python:3.9.6-slim-buster
 
+RUN apt-get update
+RUN apt-get -y install gcc
+
 RUN pip install poetry==1.1.13
 
 # Configuring poetry
