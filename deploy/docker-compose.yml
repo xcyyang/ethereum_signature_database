@@ -1,0 +1,43 @@
+version: '3.9'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: ./deploy/Dockerfile
+    image: ethereum_signature_database:${ETHEREUM_SIGNATURE_DATABASE_VERSION:-latest}
+    restart: always
+    env_file:
+    - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ETHEREUM_SIGNATURE_DATABASE_HOST: 0.0.0.0
+      ETHEREUM_SIGNATURE_DATABASE_DB_HOST: ethereum_signature_database-db
+      ETHEREUM_SIGNATURE_DATABASE_DB_PORT: 5432
+      ETHEREUM_SIGNATURE_DATABASE_DB_USER: ethereum_signature_database
+      ETHEREUM_SIGNATURE_DATABASE_DB_PASS: ethereum_signature_database
+      ETHEREUM_SIGNATURE_DATABASE_DB_BASE: ethereum_signature_database
+
+  db:
+    image: postgres:13.6-bullseye
+    hostname: ethereum_signature_database-db
+    environment:
+      POSTGRES_PASSWORD: "ethereum_signature_database"
+      POSTGRES_USER: "ethereum_signature_database"
+      POSTGRES_DB: "ethereum_signature_database"
+    volumes:
+    - ethereum_signature_database-db-data:/var/lib/postgresql/data
+    restart: always
+    healthcheck:
+      test: pg_isready -U ethereum_signature_database
+      interval: 2s
+      timeout: 3s
+      retries: 40
+
+
+
+volumes:
+  ethereum_signature_database-db-data:
+    name: ethereum_signature_database-db-data
