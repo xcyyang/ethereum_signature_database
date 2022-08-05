@@ -2,6 +2,8 @@
 
 This project was generated using fastapi_template.
 
+WARNING: To reset the whole database, please delete the volume `ethereum_signature_database_db_1` in docker. Then run the command `docker-compose -f deploy/docker-compose.yml -f deploy/docker-compose.dev.yml --project-directory . up --force-recreate`
+
 ## Poetry
 
 This project uses poetry. It's a modern dependency management

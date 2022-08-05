@@ -13,6 +13,10 @@ COPY pyproject.toml poetry.lock /app/src/
 WORKDIR /app/src
 
 # Installing requirements
+RUN poetry add eth-abi
+RUN poetry add eth-utils
+Run poetry add jsonschema
+Run poetry add pysha3
 RUN poetry install
 
 # Copying actuall application
