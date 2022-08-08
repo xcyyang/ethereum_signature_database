@@ -1,3 +1,4 @@
+from typing import Optional
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field, validator
@@ -5,6 +6,20 @@ from pydantic import BaseModel, Field, validator
 
 def convert_bytes_to_string(bytes_input: bytes) -> str:
     return bytes_input.decode("utf-16")
+
+
+class SourceDTO(BaseModel):
+    """DTO for source"""
+
+    id: UUID = Field(default_factory=uuid4)
+    label: str
+    network: Optional[str] = ""
+    address: Optional[str] = ""
+    url: Optional[str] = ""
+    original_function: Optional[UUID] = Field(default_factory=uuid4)
+
+    class Config:
+        orm_mode = True
 
 
 class FunctionSignatureDTO(BaseModel):

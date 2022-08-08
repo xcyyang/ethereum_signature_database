@@ -17,6 +17,7 @@ RUN poetry add eth-abi
 RUN poetry add eth-utils
 Run poetry add jsonschema
 Run poetry add pysha3
+Run poetry add tqdm
 RUN poetry install
 
 # Copying actuall application

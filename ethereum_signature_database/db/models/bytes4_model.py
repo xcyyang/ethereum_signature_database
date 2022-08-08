@@ -3,11 +3,19 @@ from typing import List
 
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
-from sqlalchemy.sql.schema import Column, ForeignKey
+from sqlalchemy.sql.schema import Column, ForeignKey, Table
 from sqlalchemy.sql.sqltypes import String
 from sqlalchemy.types import LargeBinary
 
 from ethereum_signature_database.db.base import Base
+from ethereum_signature_database.db.models.source_model import Source
+
+association_table_for_function_and_source = Table(
+    "function_source",
+    Base.metadata,
+    Column("function_signature_id", ForeignKey("function.id")),
+    Column("source_id", ForeignKey("source.id")),
+)
 
 
 class FunctionSignature(Base):
@@ -20,6 +28,11 @@ class FunctionSignature(Base):
     return_type = Column(String())
     hex_signature = Column(String(length=8))
     bytes4_signature = Column(LargeBinary(4), ForeignKey("4bytes.bytes4_signature"))
+    source: List[Source] = relationship(
+        "Source",
+        secondary=association_table_for_function_and_source,
+        backref="functions",
+    )
 
 
 class Bytes4Signature(Base):

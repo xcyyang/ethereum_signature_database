@@ -11,10 +11,12 @@ from ethereum_signature_database.db.models.bytes4_model import (
     Bytes4Signature,
     FunctionSignature,
 )
+from ethereum_signature_database.db.models.source_model import Source
 from ethereum_signature_database.web.api.bytes4_signature.schema import (
     Bytes4SignatureDTO,
     FunctionSignatureDTO,
     FunctionSignatureInputDTO,
+    SourceDTO,
 )
 
 router = APIRouter()
@@ -42,14 +44,28 @@ async def get_functions_from_hex_signature(
     hex_signature: str,
     bytes4_signature_dao: Bytes4SignatureDAO = Depends(),
 ) -> List[FunctionSignature]:
+
     bytes4_list = await bytes4_signature_dao.get_4bytes_from_hex_signature(
         hex_signature=hex_signature,
     )
-
     if len(bytes4_list) == 0:
         return []
-
     return list(bytes4_list[0].function_signature)
+
+
+@router.get("/function/sources", response_model=List[SourceDTO])
+async def get_functions_via_function_id(
+    function_id: str,
+    function_signature_dao: FunctionSignatureDAO = Depends(),
+) -> List[Source]:
+
+    function_signature_list = await function_signature_dao.get_sources_of_function(
+        function_id=function_id,
+    )
+    if len(function_signature_list) == 0:
+        return []
+    print(function_signature_list[0].source)
+    return list(function_signature_list[0].source)
 
 
 @router.post("/function", response_model=FunctionSignatureDTO)
@@ -58,9 +74,11 @@ async def create_function_signature(
     function_signature_dao: FunctionSignatureDAO = Depends(),
 ) -> FunctionSignature:
 
-    function_signature = await function_signature_dao.create_function_signature_model(
-        function_name=function_signature_input.function_name,
-        return_type=function_signature_input.return_type,
+    function_signature = (
+        await function_signature_dao.create_function_signature_model_from_api(
+            function_name=function_signature_input.function_name,
+            return_type=function_signature_input.return_type,
+        )
     )
 
     return function_signature
