@@ -2,6 +2,16 @@
 
 This project was generated using fastapi_template.
 
+## Test project
+1. `docker-compose -f deploy/docker-compose.yml --project-directory . build`
+2. `docker-compose -f deploy/docker-compose.yml -f deploy/docker-compose.dev.yml --project-directory . up --force-recreate`
+3. Open the terminal for ethereum_signature_database and import 4bytes repo to database
+    - `cd ethereum_signature_database`
+    - `cd tools`
+    - `cd import_data_from_4bytes_repo`
+    - `python import_data_from_4bytes.py`
+4. Access `http://localhost:8000/api/docs/` to test API
+
 WARNING: To reset the whole database, please delete the volume `ethereum_signature_database_db_1` in docker. Then run the command `docker-compose -f deploy/docker-compose.yml -f deploy/docker-compose.dev.yml --project-directory . up --force-recreate`
 
 ## Poetry

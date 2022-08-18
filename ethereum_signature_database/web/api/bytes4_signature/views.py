@@ -23,7 +23,7 @@ router = APIRouter()
 
 
 @router.get("/", response_model=List[Bytes4SignatureDTO])
-async def get_4bytes_signature(
+async def get_all_hex_signatures(
     limit: int = 10,
     offset: int = 0,
     bytes4_signature_dao: Bytes4SignatureDAO = Depends(),
@@ -36,7 +36,7 @@ async def get_4bytes_signature(
     :param bytes_signatures_dao: DAO for 4 bytes signature models.
     :return: list of 4 bytes signature obbjects from database.
     """
-    return await bytes4_signature_dao.get_all_4bytes(limit=limit, offset=offset)
+    return await bytes4_signature_dao.get_all_hex_signatures(limit=limit, offset=offset)
 
 
 @router.get("/hex_signature", response_model=List[FunctionSignatureDTO])
@@ -45,7 +45,7 @@ async def get_functions_from_hex_signature(
     bytes4_signature_dao: Bytes4SignatureDAO = Depends(),
 ) -> List[FunctionSignature]:
 
-    bytes4_list = await bytes4_signature_dao.get_4bytes_from_hex_signature(
+    bytes4_list = await bytes4_signature_dao.get_hex_signature_and_functions(
         hex_signature=hex_signature,
     )
     if len(bytes4_list) == 0:
@@ -53,14 +53,14 @@ async def get_functions_from_hex_signature(
     return list(bytes4_list[0].function_signature)
 
 
-@router.get("/function/sources", response_model=List[SourceDTO])
-async def get_functions_via_function_id(
-    function_id: str,
+@router.get("/sources", response_model=List[SourceDTO])
+async def get_sources_of_function(
+    function_name: str,
     function_signature_dao: FunctionSignatureDAO = Depends(),
 ) -> List[Source]:
 
     function_signature_list = await function_signature_dao.get_sources_of_function(
-        function_id=function_id,
+        function_name=function_name,
     )
     if len(function_signature_list) == 0:
         return []
@@ -77,7 +77,6 @@ async def create_function_signature(
     function_signature = (
         await function_signature_dao.create_function_signature_model_from_api(
             function_name=function_signature_input.function_name,
-            return_type=function_signature_input.return_type,
         )
     )
 

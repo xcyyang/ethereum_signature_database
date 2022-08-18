@@ -1,7 +1,7 @@
 from typing import Optional
 from uuid import UUID, uuid4
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field
 
 
 def convert_bytes_to_string(bytes_input: bytes) -> str:
@@ -25,16 +25,8 @@ class SourceDTO(BaseModel):
 class FunctionSignatureDTO(BaseModel):
     """DTO for function signature"""
 
-    id: UUID = Field(default_factory=uuid4)
     function_name: str
-    return_type: str
-    bytes4_signature: bytes
     hex_signature: str
-
-    _convert_bytes = validator(
-        "bytes4_signature",
-        allow_reuse=True,
-    )(convert_bytes_to_string)
 
     class Config:
         orm_mode = True
@@ -44,7 +36,6 @@ class FunctionSignatureInputDTO(BaseModel):
     """DTO for creating new function signature."""
 
     function_name: str
-    return_type: str
 
 
 class Bytes4SignatureDTO(BaseModel):
@@ -54,13 +45,7 @@ class Bytes4SignatureDTO(BaseModel):
     It returned when accessing 4bytes signature from the API.
     """
 
-    bytes4_signature: bytes
     hex_signature: str
-
-    _convert_bytes = validator(
-        "bytes4_signature",
-        allow_reuse=True,
-    )(convert_bytes_to_string)
 
     class Config:
         orm_mode = True

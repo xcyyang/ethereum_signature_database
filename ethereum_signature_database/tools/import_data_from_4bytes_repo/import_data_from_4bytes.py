@@ -1,10 +1,12 @@
 import asyncio
+from io import StringIO
 
-import requests
+import psycopg2
 from tqdm import tqdm
 
-from ethereum_signature_database.db.dao.bytes4_dao import FunctionSignatureDAO
-from ethereum_signature_database.db.dao.source_dao import SourceDao
+from ethereum_signature_database.db.models.bytes4_model import FunctionSignature
+from ethereum_signature_database.db.models.source_model import Source
+from ethereum_signature_database.settings import settings
 from ethereum_signature_database.tools.database import get_db_session
 
 LABEL = "4bytes"
@@ -15,54 +17,57 @@ URL_TO_GET_FUNCTION = (
 
 
 async def main() -> None:
-    # Establish session to database
+    # Establish connection
     async_session = get_db_session()
 
-    # Create source for 4bytes
-    source_dao = SourceDao(async_session)
-    if (
-        len(
-            await source_dao.query_source_model(
-                label=LABEL,
-                url=URL,
-            ),
-        )
-        == 0
-    ):
-        print("Source not existed")
-        await source_dao.create_source_model(
-            label=LABEL,
-            url=URL,
-        )
-    source_list = await source_dao.query_source_model(
-        label=LABEL,
-        url=URL,
+    conn = psycopg2.connect(
+        host=settings.db_host,
+        database=settings.db_base,
+        user=settings.db_user,
+        password=settings.db_pass,
+        port=settings.db_port,
     )
-    source = source_list[0]
 
-    # Import function to database
-    function_signature_dao = FunctionSignatureDAO(async_session)
+    # Open a cursor to perform database operations
+    cur = conn.cursor()
 
-    with open("4bytes_list.txt", "r") as f:
-        lines = f.readlines()
-        lines = [line.rstrip() for line in lines]
-        count = 30
-        for i in tqdm(range(0, len(lines))):
-            if count < 0:
-                break
-            count -= 1
-            print(lines[i])
-            function_signature_list_request = requests.get(
-                URL_TO_GET_FUNCTION + lines[i],
+    # Read the 4bytes_list.txt and insert 4bytes
+    # Cannot ignure duplicate one
+    # TODO: Stage table could be a solution
+
+    with open("4bytes_list.txt", "r") as file:
+        lines = file.readlines()
+        bytes4_list = ""
+        for line in lines:
+            bytes4_list += line.split()[0] + "\n"
+
+    stringIO = StringIO(bytes4_list)
+    cur.copy_from(stringIO, "4bytes")
+    conn.commit()
+
+    # Insert source
+
+    source = Source(label=LABEL, url=URL)
+    async_session.add(source)
+
+    # Insert function
+    function_signature_list = []
+    for i in tqdm(range(0, len(lines))):
+
+        function_name_list = lines[i].split()[1]
+        for function_name in function_name_list.split(";"):
+
+            function_signature = FunctionSignature(
+                function_name=function_name,
+                hex_signature=lines[i].split()[0],
             )
-            for function_signature in function_signature_list_request.text.split(";"):
-                await function_signature_dao.create_function_signature_without_checking_source(
-                    function_name=function_signature,
-                    return_type="Unknown",
-                    source=source,
-                )
 
-    await async_session.close()
+            function_signature.source.append(source)
+            function_signature_list.append(function_signature)
+
+    async_session.add_all(function_signature_list)
+    await async_session.commit()
+    return None
 
 
 asyncio.run(main())

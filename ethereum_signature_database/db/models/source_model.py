@@ -17,8 +17,8 @@ class Source(Base):
     network = Column(String(), nullable=True)
     address = Column(String(), nullable=True)
     url = Column(String(), nullable=True)
-    original_function: UUID = Column(
-        UUID,
-        ForeignKey("function.id"),
+    original_function: Column(
+        String(),
+        ForeignKey("function.function_name"),
         nullable=True,
     )

@@ -18,6 +18,7 @@ RUN poetry add eth-utils
 Run poetry add jsonschema
 Run poetry add pysha3
 Run poetry add tqdm
+Run poetry add psycopg2-binary
 RUN poetry install
 
 # Copying actuall application
